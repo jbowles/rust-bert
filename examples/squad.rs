@@ -10,13 +10,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate failure;
 extern crate dirs;
+extern crate failure;
 
-use std::path::PathBuf;
-use rust_bert::pipelines::question_answering::{QuestionAnsweringModel, squad_processor};
-use tch::Device;
+use rust_bert::pipelines::question_answering::{squad_processor, QuestionAnsweringModel};
 use std::env;
+use std::path::PathBuf;
+use tch::Device;
 
 fn main() -> failure::Fallible<()> {
     //    Resources paths
@@ -27,19 +27,17 @@ fn main() -> failure::Fallible<()> {
     let vocab_path = &home.as_path().join("vocab.txt");
     let weights_path = &home.as_path().join("model.ot");
 
-//    Set-up Question Answering model
+    //    Set-up Question Answering model
     let device = Device::cuda_if_available();
-    let qa_model = QuestionAnsweringModel::new(vocab_path,
-                                               config_path,
-                                               weights_path, device)?;
+    let qa_model = QuestionAnsweringModel::new(vocab_path, config_path, weights_path, device)?;
 
-//    Define input
+    //    Define input
     let mut squad_path = PathBuf::from(env::var("squad_dataset")
         .expect("Please set the \"squad_dataset\" environment variable pointing to the SQuAD dataset folder"));
     squad_path.push("dev-v2.0.json");
     let qa_inputs = squad_processor(squad_path);
 
-//    Get answer
+    //    Get answer
     let answers = qa_model.predict(&qa_inputs, 1, 64);
     println!("Sample answer: {:?}", answers.first().unwrap());
     println!("{}", answers.len());

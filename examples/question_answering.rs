@@ -10,13 +10,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate failure;
 extern crate dirs;
+extern crate failure;
 
+use rust_bert::pipelines::question_answering::{QaInput, QuestionAnsweringModel};
 use std::path::PathBuf;
-use rust_bert::pipelines::question_answering::{QuestionAnsweringModel, QaInput};
 use tch::Device;
-
 
 fn main() -> failure::Fallible<()> {
     //    Resources paths
@@ -27,22 +26,26 @@ fn main() -> failure::Fallible<()> {
     let vocab_path = &home.as_path().join("vocab.txt");
     let weights_path = &home.as_path().join("model.ot");
 
-//    Set-up Question Answering model
+    //    Set-up Question Answering model
     let device = Device::Cpu;
-    let qa_model = QuestionAnsweringModel::new(vocab_path,
-                                               config_path,
-                                               weights_path, device)?;
+    let qa_model = QuestionAnsweringModel::new(vocab_path, config_path, weights_path, device)?;
 
-//    Define input
+    //    Define input
     let question_1 = String::from("Where does Amy live ?");
     let context_1 = String::from("Amy lives in Amsterdam");
     let question_2 = String::from("Where does Eric live");
     let context_2 = String::from("While Amy lives in Amsterdam, Eric is in The Hague.");
-    let qa_input_1 = QaInput { question: question_1, context: context_1 };
-    let qa_input_2 = QaInput { question: question_2, context: context_2 };
+    let qa_input_1 = QaInput {
+        question: question_1,
+        context: context_1,
+    };
+    let qa_input_2 = QaInput {
+        question: question_2,
+        context: context_2,
+    };
 
-//    Get answer
-    let answers = qa_model.predict(&vec!(qa_input_1, qa_input_2), 1, 32);
+    //    Get answer
+    let answers = qa_model.predict(&[qa_input_1, qa_input_2], 1, 32);
     println!("{:?}", answers);
     Ok(())
 }
